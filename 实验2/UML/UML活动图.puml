@@ -2,57 +2,45 @@
 skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
-skinparam activityFontSize 13
+skinparam activityFontSize 14
 skinparam ArrowFontSize 11
+skinparam nodesep 20
+skinparam ranksep 28
 
 title 外卖点餐与配送系统 UML 活动图：下单校验与扣库存（最终版）
 
 start
-:顾客点击"提交订单";
-:接收订单请求（含菜品列表、地址、幂等键）;
-
-if (用户已登录且为顾客角色?) then (否)
-  :返回 401/403，拒绝下单;
+:提交订单（含幂等键）;
+if (已登录且为顾客?) then (否)
+  #FFECEC:拒绝：401/403;
   stop
 else (是)
 endif
-
-:查询幂等键是否已存在;
-
 if (幂等键已存在?) then (是)
-  :返回首次生成的订单（不重复扣库存）;
+  #EAF7EE:返回原订单，不重复扣库存;
   stop
 else (否)
 endif
-
-:校验店铺状态与菜品状态;
-if (店铺营业中 且 菜品在售?) then (否)
-  :返回失败：店铺歇业 / 菜品已下架;
+if (店铺营业且在售?) then (否)
+  #FFECEC:提示歇业/已下架;
   stop
 else (是)
 endif
-
-:按请求读取菜品当前价格并生成价格快照;
-:向库存服务发起原子扣减（逐菜品）;
-
+:读取当前价并生成价格快照;
+:逐菜品原子扣减库存;
 if (全部扣减成功?) then (否)
-  :回滚已扣减的库存;
-  :返回失败：库存不足/已售罄;
+  #FFF6E5:回滚已扣库存;
+  #FFECEC:提示售罄;
   stop
 else (是)
 endif
-
-:在事务中保存订单、订单明细（含名称与单价快照）;
-:写入幂等键并设置有效期;
+:事务保存订单与明细快照;
+:写入幂等键（24h）;
 :返回订单号，状态=待支付;
-:跳转模拟支付;
-
-if (支付成功?) then (是)
-  :更新订单为已支付;
-  :写操作日志并通知商家;
-  :进入商家接单环节;
+if (模拟支付成功?) then (是)
+  #EAF7EE:已支付，通知商家;
 else (否)
-  :订单保持待支付，顾客可重试或取消;
+  #FFF6E5:保持待支付，可重试或取消;
 endif
 stop
 

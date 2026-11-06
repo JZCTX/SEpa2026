@@ -13,8 +13,8 @@
 - 生成结果：给出 4 个业务模块和 12 个用例，只有正常流程，没有异常用例，没有区分 include/extend。
 - 优点：模块边界基本正确，角色与用例的对应关系清楚，可直接作为讨论基础。
 - 缺点：遗漏"审核店铺、处理异常订单、日志查询"等管理员用例；把"查询"和"筛选"混在同一个用例里；没有体现"超时未接单自动处理"这一系统行为。
-- 人工修改：扩展为 7 个模块 + 1 个定时任务；用例补充到 22 个，增加了异常订单处理、店铺审核、日志查询、违规处理；把"按条件筛选"抽为被 include 的公共用例；把定时任务作为系统参与者加入；标注 include 关系。
-- 修改后的结果：UML用例图.puml（22 个用例、5 个参与者、9 条 include）。
+- 人工修改：扩展为 7 个模块 + 1 个定时任务；用例合并整理为 16 个，补充了异常订单处理、店铺审核、日志查询；把"校验库存与幂等"抽为被 include 的公共用例；定时任务以"系统自动处理"体现在用例描述中，不单列为参与者；标注 include 关系。
+- 修改后的结果：UML用例图.puml（16 个用例、4 个参与者、2 条 include）。
 
 ## AI-02 类图草稿
 
@@ -24,8 +24,8 @@
 - 生成结果：9 个类：User、Customer、Merchant、Courier、Admin、Shop、Dish、Order、OrderItem，只有基本关联。
 - 优点：继承关系正确，主关联（用户—订单、店铺—菜品、订单—明细）齐全，命名统一。
 - 缺点：缺少 Payment、Refund、DeliveryTask、OperationLog、Notification、DailyReport；订单金额只有一个 totalAmount，没有下单时的名称/单价快照字段；没有幂等键；没有库存版本号；没有状态枚举；订单与配送的关系缺失，无法支撑实验一中的退款、配送失败和日志需求。
-- 人工修改：补充 7 个类与 5 个枚举；为 Order 增加 addressSnapshot、idempotencyKey、cancelReason；为 OrderItem 增加 dishNameSnapshot、unitPriceSnapshot；为 Dish 增加 version（乐观锁）；为 Order 增加 canTransitTo() 表达状态约束；删除初稿中与业务无关的服务类堆叠，改为按模块分包，保证可读性。
-- 修改后的结果：UML类图.puml（15 个类、5 个枚举、7 个包），与订单状态机、时序图一致。
+- 人工修改：补充 8 个类与 5 个枚举；为 Order 增加 addressSnapshot、idempotencyKey、cancelReason；为 OrderItem 增加 dishNameSnapshot、unitPriceSnapshot；为 Dish 增加 version（乐观锁）；为 Order 增加 canTransitTo() 表达状态约束；删除初稿中与业务无关的服务类堆叠，改为按模块分包，保证可读性。
+- 修改后的结果：UML类图.puml（17 个类、5 个枚举、7 个包），与订单状态机、时序图一致。
 
 ## AI-03 订单状态机
 

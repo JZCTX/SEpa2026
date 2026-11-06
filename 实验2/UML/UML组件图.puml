@@ -1,4 +1,4 @@
-@startuml
+﻿@startuml
 skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -7,7 +7,7 @@ skinparam componentFontSize 13
 skinparam packageStyle rectangle
 skinparam nodesep 35
 skinparam ranksep 50
-left to right direction
+top to bottom direction
 
 title 外卖点餐与配送系统 UML 组件图（最终版）
 
@@ -80,3 +80,4 @@ M3 --> RDS : 幂等键/热点库存
 M2 --> OSS
 
 @enduml
+

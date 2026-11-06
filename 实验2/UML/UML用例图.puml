@@ -3,7 +3,9 @@ left to right direction
 skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
-skinparam usecaseFontSize 13
+skinparam usecaseFontSize 14
+skinparam nodesep 8
+skinparam ranksep 34
 skinparam packageStyle rectangle
 
 title 外卖点餐与配送系统 UML 用例图（最终版）
@@ -12,84 +14,52 @@ actor "顾客" as C
 actor "商家" as M
 actor "配送员" as D
 actor "平台管理员" as A
-actor "定时任务（系统）" as T <<system>>
 
 rectangle "外卖点餐与配送系统" {
-  usecase "注册 / 登录" as UC01
-  usecase "浏览与搜索菜品" as UC02
-  usecase "管理购物车" as UC03
-  usecase "提交订单" as UC04
-  usecase "模拟支付" as UC05
-  usecase "取消订单 / 申请退款" as UC06
-  usecase "查询订单与跟踪状态" as UC07
-  usecase "按条件筛选（菜品/订单）" as UC08
+  usecase "注册 / 登录" as U01
+  usecase "浏览与搜索菜品" as U02
+  usecase "购物车与提交订单" as U03
+  usecase "支付 / 取消 / 退款" as U04
+  usecase "查询订单与跟踪状态" as U05
 
-  usecase "申请入驻并提交资质" as UC10
-  usecase "管理营业状态" as UC11
-  usecase "管理菜品（上架/下架/改价/库存）" as UC12
-  usecase "接单 / 拒单" as UC13
-  usecase "出餐" as UC14
-  usecase "分配配送员" as UC15
-  usecase "查看本店订单与销售统计" as UC16
+  usecase "店铺与营业状态管理" as U06
+  usecase "菜品与库存管理" as U07
+  usecase "接单 / 拒单 / 出餐" as U08
+  usecase "分配配送员" as U09
+  usecase "查看本店订单与统计" as U10
 
-  usecase "接取配送任务" as UC20
-  usecase "确认取餐" as UC21
-  usecase "确认送达" as UC22
-  usecase "上报配送失败" as UC23
+  usecase "接取与完成配送" as U11
+  usecase "上报配送失败" as U12
 
-  usecase "审核店铺资质" as UC30
-  usecase "处理异常订单（配送失败/纠纷）" as UC31
-  usecase "查看平台统计" as UC32
-  usecase "查询关键操作日志" as UC33
-  usecase "处理违规店铺/用户" as UC34
-
-  usecase "校验营业状态与库存" as UC40
-  usecase "幂等校验（防重复下单）" as UC41
-  usecase "超时未接单自动取消退款" as UC42
-  usecase "记录关键操作日志" as UC43
+  usecase "审核店铺资质" as U13
+  usecase "处理异常订单" as U14
+  usecase "平台统计与日志查询" as U15
+  usecase "校验库存与幂等" as U16
 }
 
-C --> UC01
-C --> UC02
-C --> UC03
-C --> UC04
-C --> UC05
-C --> UC06
-C --> UC07
+C --> U01
+C --> U02
+C --> U03
+C --> U04
+C --> U05
 
-M --> UC01
-M --> UC10
-M --> UC11
-M --> UC12
-M --> UC13
-M --> UC14
-M --> UC15
-M --> UC16
+M --> U01
+M --> U06
+M --> U07
+M --> U08
+M --> U09
+M --> U10
 
-D --> UC01
-D --> UC20
-D --> UC21
-D --> UC22
-D --> UC23
+D --> U01
+D --> U11
+D --> U12
 
-A --> UC01
-A --> UC30
-A --> UC31
-A --> UC32
-A --> UC33
-A --> UC34
+A --> U01
+A --> U13
+A --> U14
+A --> U15
 
-T --> UC42
-
-UC02 .> UC08 : <<include>>
-UC07 .> UC08 : <<include>>
-UC04 .> UC40 : <<include>>
-UC04 .> UC41 : <<include>>
-UC06 .> UC43 : <<include>>
-UC13 .> UC43 : <<include>>
-UC15 .> UC43 : <<include>>
-UC16 .> UC08 : <<include>>
-UC33 .> UC08 : <<include>>
-UC42 .> UC43 : <<include>>
+U03 .> U16 : <<include>>
+U04 .> U16 : <<include>>
 
 @enduml
