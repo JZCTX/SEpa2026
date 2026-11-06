@@ -3,37 +3,80 @@ skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam componentStyle rectangle
+skinparam componentFontSize 13
+skinparam packageStyle rectangle
+skinparam nodesep 35
+skinparam ranksep 50
+left to right direction
 
-title 外卖点餐与配送系统 UML 组件图（AI 初稿）
+title 外卖点餐与配送系统 UML 组件图（最终版）
 
-package "表现层" {
-  [顾客端 App]
-  [商家端 Web]
-  [配送员 App]
-  [管理后台 Web]
+package "表现层（接入）" {
+  [顾客端 App\n浏览/下单/订单跟踪] as CApp
+  [商家端 Web\n店铺/菜品/订单工作台] as MWeb
+  [配送员 App\n任务/取餐/送达] as DApp
+  [管理后台 Web\n审核/统计/日志] as AWeb
+  [API 网关\n鉴权/限流/路由] as GW
 }
 
-package "应用层" {
-  [用户模块]
-  [店铺菜品模块]
-  [订单模块]
-  [配送模块]
+package "业务模块层" {
+  [用户与权限模块 M1] as M1
+  [店铺与菜品模块 M2] as M2
+  [订单与履约模块 M3] as M3
+  [配送模块 M4] as M4
+  [查询与统计模块 M5] as M5
+  [日志与审计模块 M6] as M6
+  [通知模块 M7] as M7
+  [定时任务调度\n超时未接单扫描] as SCH
 }
 
-package "数据层" {
-  database "MySQL" as DB
+package "基础设施层" {
+  [数据访问组件\nDAO / Repository] as DAO
+  database "MySQL 8.0" as DB
+  [Redis 7\n会话/幂等/热点库存] as RDS
+  [对象存储\n资质图片] as OSS
 }
 
-[顾客端 App] --> [订单模块]
-[商家端 Web] --> [店铺菜品模块]
-[商家端 Web] --> [订单模块]
-[配送员 App] --> [配送模块]
-[管理后台 Web] --> [用户模块]
-[订单模块] --> [店铺菜品模块]
-[订单模块] --> [配送模块]
-[用户模块] --> DB
-[店铺菜品模块] --> DB
-[订单模块] --> DB
-[配送模块] --> DB
+package "外部系统（模拟）" {
+  [模拟支付网关] as PAY
+  [站内消息/推送] as PUSH
+}
+
+CApp --> GW
+MWeb --> GW
+DApp --> GW
+AWeb --> GW
+
+GW --> M1 : 登录鉴权
+GW --> M2 : 店铺/菜品
+GW --> M3 : 订单
+GW --> M4 : 配送
+GW --> M5 : 查询
+GW --> M6 : 日志
+
+M3 --> M2 : 菜品查询/库存扣减
+M3 --> M4 : 创建配送单
+M3 --> M6 : 写日志
+M3 --> M7 : 状态通知
+M3 --> PAY : 模拟支付/退款
+M4 --> M6 : 写日志
+M4 --> M7 : 配送通知
+M5 --> M2 : 聚合店铺/菜品
+M5 --> M3 : 聚合订单
+SCH --> M3 : 触发超时取消
+SCH --> M6 : 记录自动操作
+M6 --> M7 : 异常告警
+M7 --> PUSH
+
+M1 --> DAO
+M2 --> DAO
+M3 --> DAO
+M4 --> DAO
+M5 --> DAO
+M6 --> DAO
+DAO --> DB
+M1 --> RDS : 会话/失败计数
+M3 --> RDS : 幂等键/热点库存
+M2 --> OSS
 
 @enduml

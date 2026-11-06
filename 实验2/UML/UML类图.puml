@@ -3,75 +3,237 @@ skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam classAttributeIconSize 0
+skinparam classFontSize 14
+skinparam nodesep 45
+skinparam ranksep 55
+skinparam packageStyle rectangle
+hide empty members
 hide circle
 
-title 外卖点餐与配送系统 UML 类图（AI 初稿）
+title 外卖点餐与配送系统 UML 类图（最终版）
 
-class User {
-  -userId : Long
-  -phone : String
-  -password : String
-  -role : String
-  +login() : boolean
-  +register() : boolean
+package "用户与权限模块" #F7F9FC {
+  abstract class User {
+    - userId : Long
+    - phone : String
+    - passwordHash : String
+    - role : UserRole
+    - accountStatus : String
+    - lockUntil : DateTime
+    + login(phone, pwd) : Token
+    + logout() : void
+    + lock(minutes : int) : void
+  }
+  class Customer {
+    - defaultAddress : String
+    + placeOrder(items) : Order
+    + cancelOrder(orderNo) : void
+  }
+  class Merchant {
+    - shopId : Long
+    + acceptOrder(orderNo) : void
+    + rejectOrder(orderNo, reason) : void
+  }
+  class Courier {
+    - workStatus : String
+    + acceptTask(taskId) : boolean
+    + reportFail(taskId, reason) : void
+  }
+  class Admin {
+    + auditShop(shopId, pass, remark) : void
+    + handleException(orderNo) : void
+  }
 }
 
-class Customer {
-  -address : String
-  +createOrder() : Order
+package "店铺与菜品模块" #FFF8F0 {
+  class Shop {
+    - shopId : Long
+    - name : String
+    - licenseNo : String
+    - status : ShopStatus
+    - businessHours : String
+    - auditRemark : String
+    + submitAudit() : void
+    + open() : void
+    + close() : void
+    + canOrder() : boolean
+  }
+  class Dish {
+    - dishId : Long
+    - name : String
+    - category : String
+    - price : BigDecimal
+    - stock : int
+    - status : DishStatus
+    - version : int
+    + publish() : void
+    + offShelf() : void
+    + changePrice(newPrice) : void
+    + deductStock(qty) : boolean
+    + restoreStock(qty) : void
+  }
+  class Cart {
+    - cartId : Long
+    + addItem(dishId, qty) : void
+    + removeItem(dishId) : void
+    + clear() : void
+  }
+  class CartItem {
+    - quantity : int
+  }
 }
 
-class Merchant {
-  -shopId : Long
-  +acceptOrder() : boolean
+package "订单与履约模块" #F2FBF5 {
+  class Order {
+    - orderNo : String
+    - status : OrderStatus
+    - totalAmount : BigDecimal
+    - deliveryFee : BigDecimal
+    - addressSnapshot : String
+    - idempotencyKey : String
+    - createdAt : DateTime
+    - payTime : DateTime
+    - cancelReason : String
+    + pay() : void
+    + accept() : void
+    + reject(reason) : void
+    + finishCook() : void
+    + assignDelivery(task) : void
+    + complete() : void
+    + cancel(reason) : void
+    + refund(reason) : void
+    + canTransitTo(target : OrderStatus) : boolean
+  }
+  class OrderItem {
+    - dishNameSnapshot : String
+    - unitPriceSnapshot : BigDecimal
+    - quantity : int
+    - subtotal : BigDecimal
+  }
+  class Payment {
+    - payId : Long
+    - tradeNo : String
+    - amount : BigDecimal
+    - channel : String
+    - status : String
+    - paidAt : DateTime
+  }
+  class Refund {
+    - refundId : Long
+    - amount : BigDecimal
+    - reason : String
+    - status : String
+    - refundedAt : DateTime
+  }
 }
 
-class Courier {
-  -status : String
-  +deliver() : boolean
+package "配送模块" #F5F7FF {
+  class DeliveryTask {
+    - taskId : Long
+    - courierId : Long
+    - status : DeliveryStatus
+    - assignedAt : DateTime
+    - pickupAt : DateTime
+    - deliveredAt : DateTime
+    - failReason : String
+    + assign(courierId) : void
+    + pickup() : void
+    + confirmDelivered() : void
+    + reportFail(reason) : void
+  }
 }
 
-class Admin {
-  +auditShop() : boolean
+package "查询与统计模块" #FAF5FF {
+  class DailyReport {
+    - reportDate : Date
+    - orderCount : int
+    - gmv : BigDecimal
+    + generate(date) : DailyReport
+  }
 }
 
-class Shop {
-  -shopId : Long
-  -name : String
-  -status : String
-  +open() : void
-  +close() : void
+package "日志与审计模块" #FFF5F8 {
+  class OperationLog {
+    - logId : Long
+    - operatorRole : String
+    - action : String
+    - targetType : String
+    - targetId : String
+    - beforeState : String
+    - afterState : String
+    - createdAt : DateTime
+    + write() : void
+  }
 }
 
-class Dish {
-  -dishId : Long
-  -name : String
-  -price : BigDecimal
-  -stock : int
-  +publish() : void
-}
-
-class Order {
-  -orderId : Long
-  -status : String
-  -totalAmount : BigDecimal
-  +pay() : void
-  +cancel() : void
-}
-
-class OrderItem {
-  -dishId : Long
-  -quantity : int
+package "通知模块" #F2F2F2 {
+  class Notification {
+    - noticeId : Long
+    - title : String
+    - content : String
+    - readFlag : boolean
+    - createdAt : DateTime
+    + push() : void
+  }
 }
 
 User <|-- Customer
 User <|-- Merchant
 User <|-- Courier
 User <|-- Admin
+
 Merchant "1" -- "1" Shop : 管理
 Shop "1" -- "*" Dish : 包含
+Customer "1" -- "1" Cart : 拥有
+Cart "1" *-- "*" CartItem
 Customer "1" -- "*" Order : 下单
-Order "1" -- "*" OrderItem : 包含
-OrderItem "*" -- "1" Dish : 对应
+Shop "1" -- "*" Order : 接收
+Order "1" *-- "1..*" OrderItem
+OrderItem "*" --> "1" Dish : 快照来源
+Order "1" -- "0..1" Payment : 支付
+Order "1" -- "0..1" Refund : 退款
+Order "1" -- "0..1" DeliveryTask : 配送
+Courier "1" -- "*" DeliveryTask : 执行
+OperationLog "*" ..> "1" User : 记录操作人
+Notification "*" ..> "1" User : 推送对象
+Shop "1" -- "*" DailyReport : 按日统计
+
+enum UserRole {
+  顾客
+  商家
+  配送员
+  管理员
+}
+enum ShopStatus {
+  待审核
+  营业
+  歇业
+  审核驳回
+}
+enum DishStatus {
+  草稿
+  在售
+  下架
+  售罄
+}
+enum OrderStatus {
+  待支付
+  已支付
+  制作中
+  待配送
+  配送中
+  待处理
+  已送达
+  已完成
+  已取消
+  已退款
+}
+enum DeliveryStatus {
+  待分配
+  待取餐
+  配送中
+  已送达
+  配送失败
+}
 
 @enduml

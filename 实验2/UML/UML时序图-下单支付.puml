@@ -1,0 +1,51 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 80
+skinparam ParticipantFontSize 13
+skinparam NoteFontSize 11
+
+title 外卖点餐与配送系统 UML 时序图一：下单与支付（最终版）
+
+actor "顾客" as C
+participant "订单服务\nM3" as O
+participant "库存服务\nM2" as I
+participant "Redis\n幂等/热点库存" as R
+participant "MySQL" as DB
+participant "模拟支付网关" as P
+participant "日志服务\nM6" as L
+
+C -> O : 提交订单（菜品、地址、幂等键）
+O -> R : 查询幂等键
+alt 幂等键已存在（重复提交/旧页面重试）
+  R --> O : 已存在的订单号
+  O --> C : 返回原订单（不重复扣库存、不重复下单）
+else 首次请求
+  O -> I : 校验店铺营业状态与菜品在售
+  alt 店铺歇业 / 菜品已下架
+    I --> O : 校验失败
+    O --> C : 提示"店铺已歇业/菜品已下架，请刷新"
+  else 校验通过
+    O -> I : 原子扣减库存（version 乐观锁）
+    alt 库存不足（多人抢最后一份）
+      I --> O : 扣减失败
+      O --> C : 提示"已售罄"
+    else 扣减成功
+      I --> O : 扣减结果
+      O -> DB : 开启事务：写订单 + 明细快照（名称/单价）
+      DB --> O : 保存成功
+      O -> R : 写入幂等键（TTL 24h）
+      O --> C : 返回订单号，状态=待支付
+      C -> O : 发起支付
+      O -> P : 模拟支付请求
+      P --> O : 支付成功（交易号）
+      O -> DB : 更新订单为已支付 + 写支付单
+      O -> L : 记录"支付成功"日志
+      O --> C : 支付成功，等待商家接单
+    end
+  end
+end
+
+@enduml

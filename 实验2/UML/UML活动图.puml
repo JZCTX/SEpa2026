@@ -2,18 +2,57 @@
 skinparam defaultFontName "Microsoft YaHei"
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
+skinparam activityFontSize 13
+skinparam ArrowFontSize 11
 
-title 外卖点餐与配送系统 UML 活动图：下单流程（AI 初稿）
+title 外卖点餐与配送系统 UML 活动图：下单校验与扣库存（最终版）
 
 start
-:顾客提交订单;
-:校验菜品信息;
-if (库存足够?) then (是)
-  :扣减库存;
-  :生成订单;
-  :跳转支付;
+:顾客点击"提交订单";
+:接收订单请求（含菜品列表、地址、幂等键）;
+
+if (用户已登录且为顾客角色?) then (否)
+  :返回 401/403，拒绝下单;
+  stop
+else (是)
+endif
+
+:查询幂等键是否已存在;
+
+if (幂等键已存在?) then (是)
+  :返回首次生成的订单（不重复扣库存）;
+  stop
 else (否)
-  :提示库存不足;
+endif
+
+:校验店铺状态与菜品状态;
+if (店铺营业中 且 菜品在售?) then (否)
+  :返回失败：店铺歇业 / 菜品已下架;
+  stop
+else (是)
+endif
+
+:按请求读取菜品当前价格并生成价格快照;
+:向库存服务发起原子扣减（逐菜品）;
+
+if (全部扣减成功?) then (否)
+  :回滚已扣减的库存;
+  :返回失败：库存不足/已售罄;
+  stop
+else (是)
+endif
+
+:在事务中保存订单、订单明细（含名称与单价快照）;
+:写入幂等键并设置有效期;
+:返回订单号，状态=待支付;
+:跳转模拟支付;
+
+if (支付成功?) then (是)
+  :更新订单为已支付;
+  :写操作日志并通知商家;
+  :进入商家接单环节;
+else (否)
+  :订单保持待支付，顾客可重试或取消;
 endif
 stop
 
