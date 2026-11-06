@@ -1,0 +1,18 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+
+title 外卖点餐与配送系统 UML 状态图（AI 初稿）
+
+[*] --> 待支付 : 提交订单
+待支付 --> 已支付 : 支付成功
+待支付 --> 已取消 : 顾客取消
+已支付 --> 制作中 : 商家接单
+制作中 --> 待配送 : 出餐
+待配送 --> 配送中 : 分配配送员
+配送中 --> 已送达 : 送达
+已送达 --> 已完成 : 顾客确认
+已完成 --> [*]
+
+@enduml

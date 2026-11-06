@@ -1,0 +1,77 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+
+title 外卖点餐与配送系统 UML 类图（AI 初稿）
+
+class User {
+  -userId : Long
+  -phone : String
+  -password : String
+  -role : String
+  +login() : boolean
+  +register() : boolean
+}
+
+class Customer {
+  -address : String
+  +createOrder() : Order
+}
+
+class Merchant {
+  -shopId : Long
+  +acceptOrder() : boolean
+}
+
+class Courier {
+  -status : String
+  +deliver() : boolean
+}
+
+class Admin {
+  +auditShop() : boolean
+}
+
+class Shop {
+  -shopId : Long
+  -name : String
+  -status : String
+  +open() : void
+  +close() : void
+}
+
+class Dish {
+  -dishId : Long
+  -name : String
+  -price : BigDecimal
+  -stock : int
+  +publish() : void
+}
+
+class Order {
+  -orderId : Long
+  -status : String
+  -totalAmount : BigDecimal
+  +pay() : void
+  +cancel() : void
+}
+
+class OrderItem {
+  -dishId : Long
+  -quantity : int
+}
+
+User <|-- Customer
+User <|-- Merchant
+User <|-- Courier
+User <|-- Admin
+Merchant "1" -- "1" Shop : 管理
+Shop "1" -- "*" Dish : 包含
+Customer "1" -- "*" Order : 下单
+Order "1" -- "*" OrderItem : 包含
+OrderItem "*" -- "1" Dish : 对应
+
+@enduml

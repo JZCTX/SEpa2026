@@ -1,0 +1,24 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+title 外卖点餐与配送系统 UML 时序图：下单与支付（AI 初稿）
+
+actor 顾客
+participant "订单模块" as O
+participant "店铺菜品模块" as S
+database "MySQL" as DB
+
+顾客 -> O : 提交订单
+O -> S : 查询菜品与库存
+S --> O : 返回菜品信息
+O -> DB : 保存订单
+DB --> O : 保存成功
+O --> 顾客 : 返回订单号
+顾客 -> O : 支付
+O -> DB : 更新订单状态为已支付
+O --> 顾客 : 支付成功
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+title 外卖点餐与配送系统 UML 组件图（AI 初稿）
+
+package "表现层" {
+  [顾客端 App]
+  [商家端 Web]
+  [配送员 App]
+  [管理后台 Web]
+}
+
+package "应用层" {
+  [用户模块]
+  [店铺菜品模块]
+  [订单模块]
+  [配送模块]
+}
+
+package "数据层" {
+  database "MySQL" as DB
+}
+
+[顾客端 App] --> [订单模块]
+[商家端 Web] --> [店铺菜品模块]
+[商家端 Web] --> [订单模块]
+[配送员 App] --> [配送模块]
+[管理后台 Web] --> [用户模块]
+[订单模块] --> [店铺菜品模块]
+[订单模块] --> [配送模块]
+[用户模块] --> DB
+[店铺菜品模块] --> DB
+[订单模块] --> DB
+[配送模块] --> DB
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+
+title 外卖点餐与配送系统 UML 活动图：下单流程（AI 初稿）
+
+start
+:顾客提交订单;
+:校验菜品信息;
+if (库存足够?) then (是)
+  :扣减库存;
+  :生成订单;
+  :跳转支付;
+else (否)
+  :提示库存不足;
+endif
+stop
+
+@enduml

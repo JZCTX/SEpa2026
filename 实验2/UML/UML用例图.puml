@@ -1,0 +1,43 @@
+@startuml
+left to right direction
+skinparam defaultFontName "Microsoft YaHei"
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+title 外卖点餐与配送系统 UML 用例图（AI 初稿）
+
+actor "顾客" as C
+actor "商家" as M
+actor "配送员" as D
+actor "平台管理员" as A
+
+rectangle "外卖点餐与配送系统" {
+  usecase "浏览菜品" as UC1
+  usecase "加入购物车" as UC2
+  usecase "提交订单" as UC3
+  usecase "支付" as UC4
+  usecase "取消订单" as UC5
+  usecase "查询订单" as UC6
+  usecase "店铺管理" as UC7
+  usecase "菜品管理" as UC8
+  usecase "接单出餐" as UC9
+  usecase "配送任务" as UC10
+  usecase "审核店铺" as UC11
+  usecase "查看统计" as UC12
+}
+
+C --> UC1
+C --> UC2
+C --> UC3
+C --> UC4
+C --> UC5
+C --> UC6
+M --> UC7
+M --> UC8
+M --> UC9
+D --> UC10
+A --> UC11
+A --> UC12
+
+@enduml
